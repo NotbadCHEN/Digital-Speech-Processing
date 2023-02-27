@@ -1,21 +1,20 @@
 #### 声道 采样宽度 帧速率 帧数 唯一标识 无损
 #### nchannels sampwidth framerate nframes comptype compname
 
+import wave
+import numpy as np
+import matplotlib.pyplot as pl
 
-    import wave
-    import numpy as np
-    import matplotlib.pyplot as pl
+f = wave.open("D:/Desktop/a.wav","rb")
 
-    f = wave.open("D:/Desktop/a.wav","rb")   #路径
+params = f.getparams()
+nchannels, sampwidth,framerate, nframes = params[:4]
 
-    params = f.getparams()
-    nchannels, sampwidth,framerate, nframes = params[:4]
+str_data = f.readframes(nframes)
+f.close()
 
-    str_data = f.readframes(nframes)
-    f.close()
-
-    wave_data = np.fromstring(str_data,dtype=np.short)
-    if nchannels == 2:
+wave_data = np.fromstring(str_data,dtype=np.short)
+if nchannels == 2:
     wave_data.shape = -1,2
     wave_data = wave_data.T
     time = np.arange(0,nframes) * (1.0/framerate)
@@ -26,7 +25,7 @@
     pl.xlabel("time(seconds)")
     pl.show()
 
-    elif nchannels==1:
+elif nchannels==1:
     wave_data.shape = -1, 1
     wave_data = wave_data.T
     time = np.arange(0, nframes) * (1.0 / framerate)
