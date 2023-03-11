@@ -1,0 +1,56 @@
+
+import numpy as np
+import librosa.display
+import matplotlib.pyplot as plt
+
+
+times = librosa.get_duration(filename='aa.wav')
+y, sr = librosa.load('aa.wav',sr=8000,offset=0.0,duration=None)
+x=np.arange(0,times,1/sr)
+
+plt.plot(x,y)
+plt.xlabel('times')
+plt.ylabel('amplitude')
+plt.title("aa.wav",fontsize=12,color='black')
+plt.show()
+
+def frame(x,lframe,mframe):
+    signal_length =len(x)
+    fn = (signal_length-lframe)/mframe
+    fn1 = np.ceil(fn)
+    fn1 = int(fn1)
+
+    numfillzero = (fn1*mframe+lframe)-signal_length
+
+    fillzeros = np.zeros(numfillzero)
+
+    fillsignal = np.concatenate((x,fillzeros))
+
+    d = np.tile(np.arange(0,lframe),(fn1,1))+np.tile(np.arange(0,fn1*mframe,mframe),(lframe,1)).T
+
+    d = np.array(d,dtype=np.int32)
+    signal = fillsignal[d]
+    return(signal,fn1,numfillzero)
+lframe = int(sr*0.025)
+mframe = int(sr*0.001)
+
+endframe,fn1,numfillzero = frame(y,lframe,mframe)
+
+hanwindow = np.hanning(lframe)
+signalwindow=endframe[0]*hanwindow
+
+x1 = np.arange(0,lframe,1)
+x2 = np.arange(0,lframe/sr,1/sr)
+
+plt.figure()
+plt.plot(x1,signalwindow)
+plt.xlabel('points')
+plt.ylabel('wave')
+plt.title('aa firstframe hanningwindow wave',fontsize=12,color='black')
+plt.show()
+plt.figure()
+plt.plot(x2,endframe[0])
+plt.xlabel('times')  #x轴
+plt.ylabel('wave')  #y轴
+plt.title('aa firstframe hanningwindow wave',fontsize=12,color='black')
+plt.show()
