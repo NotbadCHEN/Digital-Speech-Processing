@@ -1,0 +1,94 @@
+import wave
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.rcParams['font.sans-serif']=['SimHei']      #rc配置参数来自定义图形的各种默认属性可显示中文标题
+plt.rcParams['axes.unicode_minus']=False
+
+def waveread(filepath):
+    file=wave.open('aa.wav','rb')   #打开音频文件
+    params=file.getparams()         #获取音频文件信息
+    print('--------音频文件参数--------')
+    print(params)
+
+    nchannels,sampwidth,framerate,nframes=params[:4]    #从音频参数中取出各种参数
+    Totaltime=nframes/framerate               #计算音频信号的总时间长度
+    print('--------音频时长（秒）-------')
+    print(Totaltime)
+
+           ###将音频数据整理为时间序列####
+    strdata=file.readframes(nframes)            #获得音频文件的帧数据
+    wavedata=np.frombuffer(strdata,dtype=np.short)      #将帧数据转换为一维short类型数组
+    wavedata=wavedata*1.0/(max(abs(wavedata)))           #音频数据幅值归一化
+    wavedata=np.reshape(wavedata,[nframes,nchannels])
+    wavedata=wavedata[:,0]  #取左声道波形
+    time=np.arange(0,nframes)*(1.0/framerate)   #计算出每个数据点的时间序列，用于绘图
+    file.close()     #关闭文件
+    return [time,wavedata]
+
+
+def enframe(data,wlen,inc):   #inc帧移  wlen帧长
+
+    nx=len(data)
+    print('---------音频数据长度----------')
+    print(nx)
+    nf=(nx-wlen+inc)//inc     #计算分帧总数  //取整除
+    print('-------音频分帧后的总帧数-------')
+    print(nf)
+
+    frameout=np.zeros((nf,wlen))     #返回nf行 wlen列的用0填充的数组，设置一个空帧数组
+    indf=np.multiply(inc,np.array([i for i in range(nf)]))    #设置空帧数值中每帧数据填充的开始位置
+
+    for i in range(nf):
+        frameout[i,:]=data[indf[i]:indf[i]+wlen]    #将帧数量为nf，帧长度为wlen的语音帧填充到空帧数据中
+    if isinstance(wlen,list):     #判断一个对象是否是一个已知的类型
+        frameout=np.multiply(frameout,np.array(wlen))
+    return frameout
+
+#计算短时能量函数
+def STEn(x):
+    s=np.multiply(x,x)    #相乘
+    return np.sum(s,axis=1)     #s矩阵的每一行向量求和
+
+#计算短时过零次数
+def STZcr(x):
+    x1=x[:,:-1]  #从0开始到倒数第二个数据
+    x2=x[:,1:]   #1开始到倒数最后一个数据
+    s=np.multiply(x1,x2)
+    sign=np.where(s<0,1,0)  #如果是s<0，返回1，否则返回0
+    return np.sum(sign,axis=1)  #返回每一帧音频数据过零次数的和
+
+#计算各帧对应的时间点，用来画图
+def FrameTimeC(frameNum,wlen,inc,fs):
+    ll=np.array([i for i in range(frameNum)])   #创建一个空数组ll，其长度为输入的语音帧的数量
+    return ((ll-1)*inc+wlen/2)/fs   #根据语音帧的帧长、帧移和采样率来计算帧中各数据点对应的时间，并返回
+
+#主程序
+scr='aa.wav'  #设定音频文件路径
+[time,wavedata]=waveread(scr)   #调用waveread（）读取音频文件参数
+inc=25   #设置帧移
+wlen=50   #设置帧长
+speechframe=enframe(wavedata,wlen,inc)         #分帧，wlen：帧长，inc：帧移
+EN=STEn(speechframe)   #计算短时能量
+Zcr=STZcr(speechframe)   #计算短时过零率
+
+#绘制出语音波形及对应的短时能量和短时平均过零率
+framerate=44100
+frameTime=FrameTimeC(len(EN),wlen,inc,framerate)
+plt.figure(1)
+plt.subplot(311)
+plt.plot(time,wavedata)
+plt.ylabel("幅度")
+plt.title("语音信号")
+plt.subplot(312)
+plt.plot(frameTime,EN)
+plt.title("短时能量")
+plt.xlabel("时间(秒)")
+plt.ylabel("能量")
+plt.subplot(313)
+plt.plot(frameTime,Zcr)
+plt.title('短时过零率')
+plt.xlabel('时间(秒)')
+plt.ylabel('过零次数')
+plt.show()
+
