@@ -1,0 +1,58 @@
+import wave
+import matplotlib.pyplot as plt
+import numpy as np
+
+plt.rcParams['font.sans-serif']=['SimHei']      #rc配置参数来自定义图形的各种默认属性可显示中文标题
+plt.rcParams['axes.unicode_minus']=False
+
+def waveread(filepath):
+    file=wave.open('data/aa.wav','rb')   #打开音频文件
+    params=file.getparams()         #获取音频文件信息
+    print('--------音频文件参数--------')
+    print(params)
+
+    nchannels,sampwidth,framerate,nframes=params[:4]    #从音频参数中取出各种参数
+    Totaltime=nframes/framerate               #计算音频信号的总时间长度
+    print('--------音频时长（秒）-------')
+    print(Totaltime)
+
+           ###将音频数据整理为时间序列####
+    strdata=file.readframes(nframes)            #获得音频文件的帧数据
+    wavedata=np.frombuffer(strdata,dtype=np.short)      #将帧数据转换为一维short类型数组
+    wavedata=wavedata*1.0/(max(abs(wavedata)))           #音频数据幅值归一化
+    wavedata=np.reshape(wavedata,[nframes,nchannels])
+    wavedata=wavedata[:,0]  #取左声道波形
+    time=np.arange(0,nframes)*(1.0/framerate)   #计算出每个数据点的时间序列，用于绘图
+    file.close()     #关闭文件
+    return [time,wavedata]
+
+#快速傅里叶变换FFT（x，nfft）函数
+def FFT(x,nfft):
+    y=np.fft.fft(x,nfft)   #FFT计算
+    y=abs(y)   #取绝对值
+    freq=[i*framerate/nfft for i in range(nfft)]   #计算频谱数据对应的频率点
+    return (freq,y)
+
+#主程序
+scr="data/aa.wav"   #文件地址
+[time,wavedata]=waveread(scr)
+wavedata=wavedata[80000:90000]
+time=time[80000:90000]
+framerate=44100
+nfft=4096
+(freq,spec)=FFT(wavedata,nfft)
+
+#绘制出语音波形及对应的频谱图
+plt.figure(1)
+plt.subplot(211)   #将两张波形图绘制在一张图上
+plt.plot(time,wavedata)
+plt.title("语音波形图(有音段)")
+plt.xlabel("时间(秒)")
+plt.ylabel("幅度")
+plt.subplot(212)
+plt.plot(freq[0:len(freq)//20],spec[0:len(spec)//20])   #绘制语音数据的频谱图，设定频率显示范围
+plt.title("频谱图")
+plt.xlabel("频率(Hz)")
+plt.ylabel("幅度")
+
+plt.show()
