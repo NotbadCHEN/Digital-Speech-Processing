@@ -1,0 +1,40 @@
+#查询电脑的语音模型
+import pyttsx3
+
+engine=pyttsx3.init()
+voices=engine.getProperty('voices')   #获取系统语音合成模型
+for voice in voices:
+    print("voice:")
+    print("_ID:%s"%voice.id)
+    print("_Name:%s"%voice.name)
+    print("_Languages:%s"%voice.languages)
+    print("_Gender:%s"%voice.gender)
+    print("_Age:%s",voice.age)
+
+
+import sounddevice as sd
+from scipy.io.wavfile import write
+
+fs=44100   #音频采样率
+seconds=380   #录音时长
+myrecording=sd.rec(int(seconds*fs),samplerate=fs,channels=1)
+
+voice=pyttsx3.init()   #创建对象
+voice.setProperty('rate',150)   #设置语音速度 范围0-500
+
+volume=engine.getProperty('volume')
+print(f'语音音量:{volume}')
+engine.setProperty('volume',1)   #音量大小范围0-1
+
+zh_voice_ID="HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech\Voices\Tokens\MSTTS_V110_zhCN_KangkangM"   #语音模型
+
+voice.setProperty('voice',zh_voice_ID)
+path='陈意 许三观卖血记/xusanguan.txt'   #语音文本（要读的txt文本）
+with open(path,encoding='utf-8')as f_name:   #编解码格式设置为UTF8
+    words=str(f_name.readlines()).replace(r'\n','')
+
+voice.say(words)   #朗读语音文本
+voice.runAndWait()
+sd.wait()
+write('xusanguan.wav',fs,myrecording)   #保存为wav文件
+print('朗读，录制保存完成')
