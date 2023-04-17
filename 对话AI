@@ -1,0 +1,22 @@
+#向服务器发送请求
+import urllib.request
+#对中文进行ASCII字符的转换
+import urllib.parse
+#可以将字符串转换成字典类型
+import json
+
+#从键盘上输入
+myStr=input("跟AI说句话吧:")
+#对输入的字转码
+text=urllib.parse.quote(myStr)
+#将转码的内容拼接到链接上
+url='{}={}'.format('http://api.qingyunke.com/api.php?key=free&appid=0&msg',text)
+#向服务器发送请求
+response=urllib.request.urlopen(url)
+#读取响应数据并转换成utf-8编码
+responses=response.read().decode("utf-8")
+#转换成字典类型
+responseText=json.loads(responses)
+#从字典类型取出键为content的值并打印输出
+print(responseText["content"])
+
