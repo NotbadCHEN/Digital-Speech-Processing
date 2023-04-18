@@ -1,0 +1,25 @@
+import random
+
+# 读取问答数据
+with open("data/新cy的AI聊天库.txt", "r", encoding="utf-8") as f:
+    lines = f.readlines()
+
+# 将问答数据转换为字典格式
+qa_dict = {}
+for i in range(0, len(lines), 2):
+    question = lines[i].strip()
+    answer = lines[i+1].strip()
+    qa_dict[question] = answer
+
+# AI聊天
+while True:
+    question = input("你：")
+    if question.lower() == "exit":
+        break
+    if question in qa_dict:
+        print("AI：" + qa_dict[question])
+    else:
+        answer = input("AI：抱歉，我不知道该怎么回答。请告诉我正确的答案：")
+        qa_dict[question] = answer
+        with open("data.txt", "a") as f:
+            f.write(question + "\n" + answer + "\n")
