@@ -1,4 +1,5 @@
 import jieba
+import pyttsx3
 
 def ai_StrSplit(String):
     '''
@@ -6,26 +7,26 @@ def ai_StrSplit(String):
     :param String: The string to be decompased    #要分解的字符串
     :return: String_lt                            #分解后的字符串列表
     '''
-    String_lt=jieba.lcut(String,cut_all=True)    #要引入jieba库
+    String_lt=jieba.lcut(String,cut_all=True)       # 要引入jieba库
     String1=jieba.lcut(String,cut_all=True)
     String2=jieba.lcut(String,cut_all=True)
     String3=jieba.lcut(String,cut_all=True)
-    String3.append('')
+    String3.append('')                              # 给string3添加一个空字符串
     for Str1 in String1:
-        String2.remove(Str1)
+        String2.remove(Str1)                        # 从string2中移除当前字符（Str1）
         for Str2 in String2:
             try:
-                String3.remove(Str1)
+                String3.remove(Str1)                # 尝试从string3中移除Str1
             except:
                 pass
             try:
-                String3.remove(Str2)
+                String3.remove(Str2)                # 尝试从string3中移除Str2
             except:
                 pass
             for Str3 in String3:
-                String_lt.append(Str1+Str2+Str3)
-    String_lt=sorted(String_lt,reverse=True)
-    return String_lt
+                String_lt.append(Str1+Str2+Str3)    # 将分解出的单词（Str1、Str2和Str3）合并并添加到String_lt列表中
+    String_lt=sorted(String_lt,reverse=True)        # 将String_lt按照字典序逆序排列
+    return String_lt                                # 返回分解后的字符串列表
 
 
 def ai_MatchSiple(path,String):
@@ -42,21 +43,23 @@ def ai_MatchSiple(path,String):
             f3=f.readlines()
     '''
 
-    errow_matchsplit=0
-    back=None
+    errow_matchsplit=0       # 匹配和切分过程是否出错的标志，初始化为0
+    back=None                # 如果匹配成功，则将对应的值存储到此变量中；否则此变量维持None状态
+
+    # 打开文件，进行读取操作
     with open(path,'r',encoding='utf-8') as f:
-        while errow_matchsplit==0:
-            f1 = f.readline().strip()
-            f2 = f.readline().strip()
-            f3 = f.readline().strip()
-            if String==f1:
-                back=f2
-                errow_matchsplit=1
+        while errow_matchsplit==0:                # 只要还没有匹配成功且没有出现异常，就继续循环
+            f1 = f.readline().strip()             # 读取一行并去除首尾空格，存储到f1中
+            f2 = f.readline().strip()             # 读取下一行并进行相同处理，存储到f2中
+            f3 = f.readline().strip()             # 读取再下一行并进行相同处理，存储到f3中
+            if String==f1:                        # 如果String等于f1所存储的字符串，则表示匹配成功
+                back=f2                           # 将对应的值存储到back中
+                errow_matchsplit=1                # 将标志位置为1，表示匹配过程成功完成
+                break                             # 跳出循环
+            if f1=='' or f2=='':                  # 如果读取了空行，则跳出循环
                 break
-            if f1=='' or f2=='':
-                break
-    lt_ms=[back,errow_matchsplit]
-    return lt_ms
+    lt_ms=[back,errow_matchsplit]                 # 将结果存储到列表中
+    return lt_ms                                  # 返回结果列表
 
 
 def ai_MatchHeight(path,String_lt):
@@ -66,22 +69,22 @@ def ai_MatchHeight(path,String_lt):
     :param String_lt: list of strings to match  #要匹配的字符串列表
     :return: lt_mh                              #匹配结果与判断(1有/2无)的列表
     '''
-    errow_matchheight=0
-    back=None
-    with open(path,'r',encoding='utf-8') as f:    #注意编码
-        while errow_matchheight==0:
-            f1 = f.readline().strip()
+    errow_matchheight=0            # 初始化标志位为0，表示还未匹配到
+    back=None                      # 匹配结果初始化为空
+    with open(path,'r',encoding='utf-8') as f:       # 打开文件/注意编码
+        while errow_matchheight==0:                  # 标志位为0时进入循环
+            f1 = f.readline().strip()                # 读取一行内容并去掉空格和换行符
             f2 = f.readline().strip()
             f3 = f.readline().strip()
-            for String in String_lt:
-                if String==f1:
-                    back=f2
-                    errow_matchheight=1
-                    break
-            if f1 == '' or f2=='':
+            for String in String_lt:                 # 遍历待匹配的字符串列表
+                if String==f1:                       # 如果当前字符串能够与字典中的某个值匹配成功
+                    back=f2                          # 则将该键对应的值记录在back变量中
+                    errow_matchheight=1              # 并将标志位置为1，表示已经匹配成功
+                    break                            # 跳出for循环
+            if f1 == '' or f2=='':                   # 如果仍然有数据行，则继续匹配；否则跳出循环
                 break
-    lt_mh=[back,errow_matchheight]
-    return lt_mh
+    lt_mh=[back,errow_matchheight]                   # 将匹配结果和标志位组成一个列表
+    return lt_mh                                     # 返回结果
 
 def ai_study(path,study_start,study_end):
     '''
@@ -92,42 +95,54 @@ def ai_study(path,study_start,study_end):
     :return: None                                                           #无返回
     '''
 
-    with open(path,'a',encoding='utf-8') as f:
-        f.write(study_start+'\n')
-        f.write(study_end+'\n')
-        f.write('\n')
+    with open(path,'a',encoding='utf-8') as f:       # 使用with语句打开文件，并以utf-8编码方式附加写入
+        f.write(study_start+'\n')                    # 将匹配语句写入文件
+        f.write(study_end+'\n')                      # 将匹配结果写入文件
+        f.write('\n')                                # 写入一个空行，方便下一次写入
 
 
 if __name__=='__main__':
     #path=r'data/cy的AI聊天库.txt'     #要匹配的词典
     path=r'data/cy的AI聊天库.txt'
-    print('='*20+'程序开始'+'='*20)
-    print('小艾：主人是否要加载学习模块')
-    errow_study=input('主人(y/n):')
-    print('小艾：主人请吩咐')
-    String=input('主人:')
-    while String !='exit':
-        a1=ai_MatchSiple(path=path,String=String)
-        show=a1[0]
-        errow_matchsimple=a1[1]
-        if errow_matchsimple==0:
-            String_lt=ai_StrSplit(String=String)
-            a2=ai_MatchHeight(path=path,String_lt=String_lt)
-            show=a2[0]
-            errow_matchight=a2[1]
-            if errow_matchight==0 and (errow_study=='y' or errow_study=='yes'):
-                print('小艾： 请主人输入学习语句(n退出学习)')
-                study_start=input('主人:')
+    print('='*20+'程序开始'+'='*20)    # 打印程序开始
+    # errow_study=input('我(y/n):')   # 错误学习功能（用了显冗杂）
+    print('小四：您请说')               # 打印提示信息
+    String=input('我:')               # 获取用户输入
+    engine=pyttsx3.init()             # 初始化语音合成引擎
+    engine.setProperty('rate',150)    # 设置语速为 150
+    engine.setProperty('volume',1)    # 设置音量为 1
+
+
+
+    while String !='exit':    # 循环直到用户输入 'exit'
+        a1=ai_MatchSiple(path=path,String=String)                   # 匹配简单模式
+        show=a1[0]                                                  # 匹配结果
+        errow_matchsimple=a1[1]                                     # 是否匹配成功
+        if errow_matchsimple==0:                                    # 如果匹配不成功
+            String_lt=ai_StrSplit(String=String)                    # 分词
+            a2=ai_MatchHeight(path=path,String_lt=String_lt)        # 匹配高级模式
+            show=a2[0]                                              # 匹配结果
+            errow_matchight=a2[1]                                   # 是否匹配成功
+            if errow_matchight==0:                                  # 如果匹配不成功 # and (errow_study=='y' or errow_study=='yes')
+                print('小四： 请您输入学习语句(n退出学习)')
+                study_start=input('我：')                            # 获取学习的问题
                 if study_start !='n' and study_start !='no':
-                    print('小艾:请主人输入回答语句(n退出学习)')
-                    study_end=input('主人：')
+                    print('小四:请您输入回答语句(n退出学习)')
+                    study_end=input('我：')                          # 获取学习的答案
                     if study_end !='n' and study_end !='no':
-                        print('小艾：加载中...')
-                        ai_study(path=path,study_start=study_start,study_end=study_end)
-                        print('小艾:加载完成')
+                        print('小四：加载中...')
+                        ai_study(path=path,study_start=study_start,study_end=study_end)     # 学习
+                        print('小四:加载完成')                         # 打印学习完成提示信息
             else:
-                print('小艾：',show)
+                print('小四：',show)     # 匹配成功，输出匹配结果
+                engine.say(show)        # 添加语音播报功能
+                engine.runAndWait()     # 播放语音
+
+
         else:
-            print('小艾：',show)
-        String=input('主人:')
+            print('小四：',show)         # 匹配成功，输出匹配结果
+            engine.say(show)            # 添加语音播报功能
+            engine.runAndWait()         # 播放语音
+
+        String=input('我:')
     print('='*20+'程序结束'+'='*20)
