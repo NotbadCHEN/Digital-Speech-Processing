@@ -3,6 +3,7 @@ from functools import partial
 import jieba
 import pyttsx3
 
+#将输入的字符串分解成一个列表并返回 逆序排列并返回
 def ai_StrSplit(String):
     '''
     Decompose the string into a list              #将字符串分解为一个列表
@@ -31,6 +32,8 @@ def ai_StrSplit(String):
     return String_lt                                # 返回分解后的字符串列表
 
 
+
+#将输入的字符串与字典文件进行匹配 并返回匹配结果和判断匹配是否成功的标志
 def ai_MatchSiple(path,String):
     '''
     Matches the dictionary to a single string
@@ -48,6 +51,7 @@ def ai_MatchSiple(path,String):
     errow_matchsplit=0       # 匹配和切分过程是否出错的标志，初始化为0
     back=None                # 如果匹配成功，则将对应的值存储到此变量中；否则此变量维持None状态
 
+
     # 打开文件，进行读取操作
     with open(path,'r',encoding='utf-8') as f:
         while errow_matchsplit==0:                # 只要还没有匹配成功且没有出现异常，就继续循环
@@ -64,6 +68,7 @@ def ai_MatchSiple(path,String):
     return lt_ms                                  # 返回结果列表
 
 
+#匹配一个字典（通过传入的文件路径）和一个字符串列表
 def ai_MatchHeight(path,String_lt):
     '''
     Matches the dictionary to a single string   #用字符串列表匹配字典
@@ -88,6 +93,8 @@ def ai_MatchHeight(path,String_lt):
     lt_mh=[back,errow_matchheight]                   # 将匹配结果和标志位组成一个列表
     return lt_mh                                     # 返回结果
 
+
+#向一个字典文件中写入匹配语句和匹配结果
 def ai_study(path,study_start,study_end):
     '''
     Open the dictionary and write the match statement and the match result  #打开字典并编写匹配的语句和匹配的结果
@@ -103,90 +110,103 @@ def ai_study(path,study_start,study_end):
         f.write('\n')                                # 写入一个空行，方便下一次写入
 
 
+
+#聊天机器人的交互逻辑
 def ai_study_gui():
     path = "data/cy的AI聊天库.txt"
 
-    def study():                    #def study全段可不用 将168行学习按钮中的command参数设置为 ai_study即可
-        study_start = entry_question.get()
-        study_end = entry_answer.get()
-        if study_start and study_end:
-            ai_study(path=path, study_start=study_start, study_end=study_end)
-            label_status.config(text="学习完成！")
-            entry_question.delete(0, tk.END)
-            entry_answer.delete(0, tk.END)
+    # def study():                    #def study全段可不用 将168行学习按钮中的command参数设置为ai_study即可
+    #     study_start = entry_question.get()
+    #     study_end = entry_answer.get()
+    #     if study_start and study_end:
+    #         ai_study(path=path, study_start=study_start, study_end=study_end)
+    #         label_status.config(text="学习完成！")
+    #         entry_question.delete(0, tk.END)
+    #         entry_answer.delete(0, tk.END)
 
-    def chat():
+#根据输入的问题进行匹配并输出回答 如果匹配不成功，则会给出学习的提示 当用户输入"exit"时，程序退出
+    def chat(event=None):
         String = entry_input.get()
         if String != "exit":
             a1 = ai_MatchSiple(path=path, String=String)  # 匹配简单模式
-            show = a1[0]  # 匹配结果
-            errow_matchsimple = a1[1]  # 是否匹配成功
-            engine = pyttsx3.init()  # 初始化语音合成引擎
-            engine.setProperty('rate', 150)  # 设置语速为 150
-            engine.setProperty('volume', 1)  # 设置音量为 1
+            show = a1[0]       # 匹配结果
+            errow_matchsimple = a1[1]          # 是否匹配成功
 
-            if errow_matchsimple == 0:  # 如果匹配不成功
+            engine = pyttsx3.init()            # 初始化语音合成引擎
+            engine.setProperty('rate', 150)    # 设置语速为 150
+            engine.setProperty('volume', 1)    # 设置音量为 1
+
+            if errow_matchsimple == 0:      # 如果匹配不成功
                 String_lt = ai_StrSplit(String=String)  # 分词
                 a2 = ai_MatchHeight(path=path, String_lt=String_lt)  # 匹配高级模式
                 show = a2[0]  # 匹配结果
-                errow_matchight = a2[1]  # 是否匹配成功
-                if errow_matchight == 0:  # 如果匹配不成功 # and (errow_study=='y' or errow_study=='yes')
+                errow_matchight = a2[1]     # 是否匹配成功
+                if errow_matchight == 0:    # 如果匹配不成功 # and (errow_study=='y' or errow_study=='yes')
                     label_status.config(text="小四: 您可以输入问题进行学习哦！")
                 else:
                     label_output.config(text="小四：" + show)
-                    engine.say(show)  # 添加语音播报功能
+                    engine.say(show)        # 添加语音播报功能
                     engine.runAndWait()
             else:
                 label_output.config(text="小四：" + show)
-                engine.say(show)  # 添加语音播报功能
+                engine.say(show)            # 添加语音播报功能
                 engine.runAndWait()
         else:
             root.quit()
 
-
+    # 创建一个根窗口
     root = tk.Tk()
-    root.title("AI聊天窗口")
-    root.geometry("400x300")
+    root.title("CY的聊天机器人")         # 设置窗口标题
+    root.geometry("400x300")           # 设置窗口大小
 
     # 问题输入框
     frame_question = tk.Frame(root)
     frame_question.pack(pady=10)
+    #创建一个标签用于显示“请输入问题：”
     label_question = tk.Label(frame_question, text="请输入问题：")
     label_question.pack(side=tk.LEFT)
+    #创建一个文本框，用于输入问题
     entry_question = tk.Entry(frame_question, width=30)
     entry_question.pack(side=tk.LEFT)
 
     # 回答输入框
     frame_answer = tk.Frame(root)
     frame_answer.pack(pady=10)
+    #创建一个标签用于显示“请输入回答：”
     label_answer = tk.Label(frame_answer, text="请输入回答：")
     label_answer.pack(side=tk.LEFT)
+    #创建一个文本框，用于输入问题
     entry_answer = tk.Entry(frame_answer, width=30)
     entry_answer.pack(side=tk.LEFT)
 
-    # 学习按钮
-    button_study = tk.Button(root, text="学习", command=study)
+    # 创建一个学习按钮，并指定点击时调用函数为ai_study
+    button_study = tk.Button(root, text="学习", command=ai_study)
     button_study.pack(pady=10)
 
     # 输入输出框
     frame_chat = tk.Frame(root)
     frame_chat.pack(pady=10)
+    #创建一个标签用于显示“我：”
     label_input = tk.Label(frame_chat, text="我：")
     label_input.grid(row=0, column=0)
+    #创建一个文本框，用于输入对话内容
     entry_input = tk.Entry(frame_chat, width=30)
     entry_input.grid(row=0, column=1)
+    #创建一个发按钮，并指定点击时调用的函数为chat
     button_send = tk.Button(frame_chat, text="发送", command=chat)
     button_send.grid(row=0, column=2)
+    # 创建一个标签用于显示机器人回答的内容
     label_output = tk.Label(frame_chat, text="")
     label_output.grid(row=1, columnspan=3)
 
-    # 状态栏
-    label_status = tk.Label(root, text="小四: 您可以输入问题进行学习哦！")
+    # 创建一个状态栏，显示当前机器人的状态信息
+    label_status = tk.Label(root, text="小四: 您可以向我提问")
     label_status.pack(side=tk.BOTTOM)
 
-    root.mainloop()
+    entry_input.bind('<Return>',chat)   # 监听按键事件(用回车键作为发送)
+    root.mainloop()   #进入消息循环
 
-
+#如果这个脚本是主程序，则执行ai_study_gui()函数来启动程序
 if __name__ == '__main__':
     ai_study_gui()
 
