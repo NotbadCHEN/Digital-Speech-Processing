@@ -68,6 +68,7 @@ def ai_MatchSiple(path,String):
     return lt_ms                                  # 返回结果列表
 
 
+
 #匹配一个字典（通过传入的文件路径）和一个字符串列表
 def ai_MatchHeight(path,String_lt):
     '''
@@ -94,6 +95,7 @@ def ai_MatchHeight(path,String_lt):
     return lt_mh                                     # 返回结果
 
 
+
 #向一个字典文件中写入匹配语句和匹配结果
 def ai_study(path,study_start,study_end):
     '''
@@ -115,14 +117,14 @@ def ai_study(path,study_start,study_end):
 def ai_study_gui():
     path = "data/cy的AI聊天库.txt"
 
-    # def study():                    #def study全段可不用 将168行学习按钮中的command参数设置为ai_study即可
-    #     study_start = entry_question.get()
-    #     study_end = entry_answer.get()
-    #     if study_start and study_end:
-    #         ai_study(path=path, study_start=study_start, study_end=study_end)
-    #         label_status.config(text="学习完成！")
-    #         entry_question.delete(0, tk.END)
-    #         entry_answer.delete(0, tk.END)
+    def study():
+        study_start = entry_question.get()
+        study_end = entry_answer.get()
+        if study_start and study_end:
+            ai_study(path=path, study_start=study_start, study_end=study_end)
+            label_status.config(text="学习完成！")
+            entry_question.delete(0, tk.END)
+            entry_answer.delete(0, tk.END)
 
 #根据输入的问题进行匹配并输出回答 如果匹配不成功，则会给出学习的提示 当用户输入"exit"时，程序退出
     def chat(event=None):
@@ -180,7 +182,7 @@ def ai_study_gui():
     entry_answer.pack(side=tk.LEFT)
 
     # 创建一个学习按钮，并指定点击时调用函数为ai_study
-    button_study = tk.Button(root, text="学习", command=ai_study)
+    button_study = tk.Button(root, text="学习", command=study)
     button_study.pack(pady=10)
 
     # 输入输出框
@@ -209,6 +211,3 @@ def ai_study_gui():
 #如果这个脚本是主程序，则执行ai_study_gui()函数来启动程序
 if __name__ == '__main__':
     ai_study_gui()
-
-
-
